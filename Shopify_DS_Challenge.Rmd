@@ -1,0 +1,129 @@
+---
+title: "Shopify_DS_Challenge"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(dlookr)
+```
+
+
+```{r}
+library(readxl)
+X2019_Winter_Data_Science_Intern_Challenge_Data_Set <- read_excel("C:/Users/shaun/Downloads/2019 Winter Data Science Intern Challenge Data Set.xlsx")
+shopShoes <- X2019_Winter_Data_Science_Intern_Challenge_Data_Set
+```
+
+```{r}
+describe(shopShoes)
+```
+
+```{r}
+summary(shopShoes)
+```
+We will look only at order_amount and total_items as they are fields which contain numerical values which we can analyse.
+
+For the order_amount column, we can see that the 3rd quartile value is quite close to the median but the maximum (or the last value)
+is substantially faraway from the median. This gives us strong hints of it being an outlier.
+
+For the total_items column, we again see that the 3rd quartile value is quite close to the median but the maximum (or the last value)
+is substantially faraway from the median. For this scenario as well, we see strong hints of it being an outlier.
+
+We can see that in those two columns, there might be outliers that are skewing our mean values.
+
+```{r}
+diagnose_outlier(shopShoes)
+```
+
+We can see that both the columns under investigation contain a very small number of outliers, when taken in context with the size of the dataset i.e. 141 and 18 for order_amount and total_items respectively.
+
+```{r}
+shopShoes_cols <- shopShoes %>% dplyr::select(order_amount, total_items)
+plot_outlier(shopShoes_cols)
+```
+
+Looking at the y-axes in the graphs for both the columns, we see that having outliers in the dataset values makes a lot
+of difference, skewing the graphs to a great extent.
+
+
+```{r}
+boxplot(shopShoes_cols)
+```
+
+We will attempt to remove the rows that are outliers. In this process, we will first start by taking values
+for total_items in our dataset that are less than 2000, as we a few rows with the value 2000, followed by a
+massive drop with a value of 8.
+
+Also for order_amount, we will drop values that are less than 704000, as we a few rows with the value 704000
+which is very high as compared to the median. We will keep iterating on this column till we have very few outliers.
+
+```{r}
+shopShoes_cleaned1 <- shopShoes_cols[shopShoes_cols$total_items < 2000, ]
+
+shopShoes_cleaned1 <- shopShoes_cols[shopShoes_cols$order_amount < 704000, ]
+```
+
+```{r}
+diagnose_outlier(shopShoes_cleaned1)
+```
+
+
+Iterating on the order_amount column with a maximum threshold of 100000, dropped from 704000.
+
+```{r}
+shopShoes_cleaned2 <- shopShoes_cols[shopShoes_cols$order_amount < 100000, ]
+diagnose_outlier(shopShoes_cleaned2)
+```
+
+
+Iterating on the order_amount column with a maximum threshold of 50000, dropped from 100000.
+
+```{r}
+shopShoes_cleaned3 <- shopShoes_cols[shopShoes_cols$order_amount < 50000, ]
+diagnose_outlier(shopShoes_cleaned3)
+```
+
+
+Iterating on the order_amount column with a maximum threshold of 25000, dropped from 50000.
+
+```{r}
+shopShoes_cleaned4 <- shopShoes_cols[shopShoes_cols$order_amount < 25000, ]
+diagnose_outlier(shopShoes_cleaned4)
+```
+
+
+Iterating on the order_amount column with a maximum threshold of 715, dropped from 25000.
+(Arrived on the value 715 after trial and error using the diagnose_outlier function, where I was
+attempting to see which threshold limit would give me a respectably least amount of outliers.)
+
+```{r}
+shopShoes_cleaned5 <- shopShoes_cols[shopShoes_cols$order_amount < 715, ]
+diagnose_outlier(shopShoes_cleaned5)
+```
+
+
+```{r}
+summary(shopShoes_cleaned5)
+```
+
+Q1a. 
+What went wrong with our calculation was that our dataset contained outliers that were skewing our metrics.
+To evaluate the data better, we could remove the outliers and then look at the descriptive statistics for the dataset.
+The alternative would be to look at the median.
+
+Q1b.
+We can look at the descriptive statistics for the cleaned dataset, specifically the average order value (AOV).
+Or we could just look at the median from the original datset as it is not as affected as the mean, by the outliers.
+
+Q1c.
+By removing the outliers, we now have a mean value (average order value (AOV)) that might better represent the 
+data. This new value of mean we obtain is 293.3.
+We also have a median of 280 for the cleaned dataset.
+
+If we decide to look at the original dataset, we would have a median of 284.
+Looking at both the median values and comparing it to the mean we obtained, we can say that the 
+average order value (AOV) for the cleaned dataset would represent the dataset quite well.
+
+
+
